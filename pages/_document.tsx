@@ -9,6 +9,7 @@ export default function Document() {
           type="image/svg+xml"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23e53e3e' stroke='%23222' stroke-width='4'/%3E%3Crect x='2' y='46' width='96' height='8' fill='%23222'/%3E%3Ccircle cx='50' cy='50' r='14' fill='%23fff' stroke='%23222' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='7' fill='%23fff' stroke='%23222' stroke-width='3'/%3E%3Cpath d='M4 50 Q50 2 96 50' fill='%23e53e3e'/%3E%3Cpath d='M4 50 Q50 98 96 50' fill='%23f5f5f5'/%3E%3C/svg%3E"
         />
+        <link rel="stylesheet" href="/globals.css" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
