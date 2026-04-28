@@ -32,7 +32,7 @@ export default function Filters({
 
   return (
     <section className="filters">
-      <div className="main" style={{ paddingTop: 0, paddingBottom: 0 }}>
+      <div className="container">
         <div className="search-wrapper">
           <div className="search-icon">
             <svg

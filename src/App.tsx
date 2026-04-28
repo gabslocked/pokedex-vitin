@@ -24,6 +24,7 @@ export default function App() {
   const [sortOption, setSortOption] = useState<SortOption>('id-asc');
 
   const [modalPokemonId, setModalPokemonId] = useState<number | null>(null);
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(true);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const cacheRef = useRef<Record<number, Pokemon>>({});
@@ -96,8 +97,10 @@ export default function App() {
     });
 
     setFilteredList(filtered);
-    setCurrentOffset(0);
-    setDisplayedPokemon([]);
+    const firstPage = filtered.slice(0, PAGE_SIZE);
+    const immediate = firstPage.map(p => cacheRef.current[p.id]).filter(Boolean) as Pokemon[];
+    setDisplayedPokemon(immediate);
+    setCurrentOffset(firstPage.length);
   }, [allPokemon, searchQuery, activeTypes, activeGen, sortOption, pokemonCache]);
 
   useEffect(() => {
@@ -144,6 +147,13 @@ export default function App() {
     return () => observer.disconnect();
   }, [loadNextPage]);
 
+  useEffect(() => {
+    if (!isLoading && showLoadingOverlay) {
+      const t = setTimeout(() => setShowLoadingOverlay(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [isLoading, showLoadingOverlay]);
+
   const handleToggleType = (type: string) => {
     setActiveTypes(prev => {
       const next = new Set(prev);
@@ -165,8 +175,8 @@ export default function App() {
 
   return (
     <>
-      {isLoading && (
-        <div className="loading-overlay">
+      {showLoadingOverlay && (
+        <div className={`loading-overlay ${!isLoading ? 'fade-out' : ''}`}>
           <div className="pokeball-loader" />
           <p className="loading-text">Carregando Pokédex...</p>
         </div>
@@ -194,7 +204,7 @@ export default function App() {
         onClearAll={handleClearAll}
       />
 
-      <div className="main" style={{ paddingBottom: 0 }}>
+      <div className="container" style={{ padding: '0 2rem' }}>
         <div className="stats-bar">
           <span className="stats-count">
             {filteredList.length === allPokemon.length ? (
@@ -204,9 +214,6 @@ export default function App() {
             )}
           </span>
         </div>
-      </div>
-
-      <div className="main" style={{ paddingTop: 0 }}>
         <main className="pokemon-grid">
           {displayedPokemon.map((pokemon, i) => (
             <PokemonCard
@@ -224,7 +231,6 @@ export default function App() {
             </div>
           )}
         </main>
-
         {currentOffset < filteredList.length && (
           <div ref={sentinelRef} className="scroll-sentinel">
             <div className="mini-spinner" />

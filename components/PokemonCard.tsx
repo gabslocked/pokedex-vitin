@@ -1,4 +1,4 @@
-import type { KeyboardEvent, CSSProperties } from 'react';
+import { useState, useEffect, type KeyboardEvent, type CSSProperties } from 'react';
 import { TYPE_CONFIG, ARTWORK_URL, SPRITE_URL } from '../lib/constants';
 import type { Pokemon } from '../lib/types';
 
@@ -13,6 +13,14 @@ interface PokemonCardProps {
 }
 
 export default function PokemonCard({ pokemon, index, onClick }: PokemonCardProps) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [entering, setEntering] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setEntering(false), 500);
+    return () => clearTimeout(t);
+  }, []);
+
   const primaryType = pokemon.types[0] ?? 'normal';
   const typeColor = TYPE_CONFIG[primaryType]?.color ?? '#A8A878';
 
@@ -27,7 +35,7 @@ export default function PokemonCard({ pokemon, index, onClick }: PokemonCardProp
 
   return (
     <div
-      className="pokemon-card"
+      className={`pokemon-card ${entering ? 'entering' : ''}`}
       style={
         {
           '--card-type-color': typeColor,
@@ -43,15 +51,17 @@ export default function PokemonCard({ pokemon, index, onClick }: PokemonCardProp
 
       <div className="pokemon-img-wrapper">
         <img
-          className="pokemon-img"
+          className={`pokemon-img ${imgLoaded ? 'loaded' : ''}`}
           src={ARTWORK_URL(pokemon.id)}
-          loading="lazy"
-          alt={capitalize(pokemon.name)}
+          onLoad={() => setImgLoaded(true)}
           onError={(e) => {
             const img = e.currentTarget;
             img.onerror = null;
             img.src = SPRITE_URL(pokemon.id);
           }}
+          loading="lazy"
+          decoding="async"
+          alt={capitalize(pokemon.name)}
         />
       </div>
 

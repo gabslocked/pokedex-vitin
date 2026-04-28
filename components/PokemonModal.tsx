@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TYPE_CONFIG, ARTWORK_URL, SPRITE_URL, STAT_NAMES } from '../lib/constants';
 import { getPokemon, getSpecies, getEvolutionChain } from '../lib/api';
 import type { Pokemon, Species, EvolutionStage } from '../lib/types';
@@ -36,6 +36,15 @@ export default function PokemonModal({ pokemonId, onClose, onNavigate }: Pokemon
   const [evolution, setEvolution] = useState<EvolutionStage[] | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('about');
   const [loading, setLoading] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      onClose();
+    }, 300);
+  }, [onClose]);
 
   useEffect(() => {
     if (pokemonId === null) return;
@@ -43,11 +52,9 @@ export default function PokemonModal({ pokemonId, onClose, onNavigate }: Pokemon
     let cancelled = false;
 
     async function fetchData() {
-      setLoading(true);
-      setPokemon(null);
-      setSpecies(null);
-      setEvolution(null);
       setActiveTab('about');
+      setEvolution(null);
+      setLoading(true);
 
       const [poke, spec] = await Promise.all([
         getPokemon(pokemonId!),
@@ -74,14 +81,22 @@ export default function PokemonModal({ pokemonId, onClose, onNavigate }: Pokemon
     };
   }, [pokemonId]);
 
+  // Body scroll lock
+  useEffect(() => {
+    if (pokemonId !== null) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [pokemonId]);
+
   // Close on Escape
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [handleClose]);
 
   if (pokemonId === null) return null;
 
@@ -92,9 +107,9 @@ export default function PokemonModal({ pokemonId, onClose, onNavigate }: Pokemon
   const gradient = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className={`modal-overlay ${closing ? 'closing' : ''}`} onClick={handleClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} type="button" aria-label="Fechar">
+        <button className="modal-close" onClick={handleClose} type="button" aria-label="Fechar">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
